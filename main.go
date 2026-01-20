@@ -30,6 +30,7 @@ func main() {
 	commands.register("login", handlerLogin)
 	commands.register("register", handlerRegister)
 	commands.register("users", handlerUsers)
+	commands.register("agg", handlerAgg)
 
 	commands.register("reset", handlerReset) // debug command
 

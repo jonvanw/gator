@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"os"
 
 	"github.com/jonvanw/gator/internal/config"
 )
@@ -10,15 +10,28 @@ import (
 func main() {
 	cfg, err := config.ReadConfig()
 	if err != nil {
-		log.Fatalf("Failed to read config: %v", err)
+		fmt.Fprintf(os.Stderr, "Failed to read config: %v\n", err)
+		os.Exit(1)
 	}
 
-	cfg.SetUser("Jon")
+	s := NewState(cfg)
 
-	cfg, err = config.ReadConfig()
+	commands := NewCommands()
+	commands.register("login", handlerLogin)
+
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: gator <command> [args...]")
+		os.Exit(1)
+	}
+
+	cmdName := os.Args[1]
+	cmdArgs := os.Args[2:]
+
+	cmd := command{name: cmdName, args: cmdArgs}
+
+	err = commands.run(s, cmd)
 	if err != nil {
-		log.Fatalf("Failed to read config: %v", err)
+		fmt.Println("Error:", err)
+		os.Exit(1)
 	}
-
-	fmt.Printf("Contents of config file: %+v\n", cfg)
 }

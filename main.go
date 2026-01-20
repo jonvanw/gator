@@ -29,7 +29,10 @@ func main() {
 	commands := NewCommands()
 	commands.register("login", handlerLogin)
 	commands.register("register", handlerRegister)
-	
+	commands.register("users", handlerUsers)
+
+	commands.register("reset", handlerReset) // debug command
+
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: gator <command> [args...]")
 		os.Exit(1)

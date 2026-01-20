@@ -31,7 +31,9 @@ func main() {
 	commands.register("register", handlerRegister)
 	commands.register("users", handlerUsers)
 	commands.register("agg", handlerAgg)
-
+	commands.register("addfeed", handlerAddFeed)
+	commands.register("feeds", handlerFeeds)
+	
 	commands.register("reset", handlerReset) // debug command
 
 	if len(os.Args) < 2 {

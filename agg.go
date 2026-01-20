@@ -8,11 +8,12 @@ import (
 )
 
 func handlerAgg(s *state, cmd command) error {
+	url := "https://www.wagslane.dev/index.xml"
 	if len(cmd.args) != 1 {
-		return fmt.Errorf("fetch command requires exactly one argument, the URL.")
+		//return fmt.Errorf("fetch command requires exactly one argument, the URL.")
+	} else { // TODO else condition should be moved outside of if/else block
+		url = cmd.args[0]
 	}
-
-	url := cmd.args[0]
 
 	feed, err := rss.FetchFeed(context.Background(), url)
 	if err != nil {

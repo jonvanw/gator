@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 type command struct {
@@ -20,7 +21,7 @@ func NewCommands() *commands {
 }
 
 func (c *commands) run(s *state, cmd command) error {
-	handler, ok := c.handlers[cmd.name]
+	handler, ok := c.handlers[strings.ToLower(cmd.name)]
 	if !ok {
 		return fmt.Errorf("unknown command: %s", cmd.name)
 	}
@@ -28,5 +29,5 @@ func (c *commands) run(s *state, cmd command) error {
 }
 
 func (c *commands) register(name string, handler func(s *state, cmd command) error) {
-	c.handlers[name] = handler
+	c.handlers[strings.ToLower(name)] = handler
 }

@@ -2,14 +2,17 @@ package main
 
 import (
 	"github.com/jonvanw/gator/internal/config"
+	"github.com/jonvanw/gator/internal/database"
 )
 
 type state struct {
-	config *config.Config
+	db *database.Queries
+	cfg *config.Config
 }
 
-func NewState(cfg *config.Config) *state {
+func NewState(cfg *config.Config, db *database.Queries) *state {
 	return &state{
-		config: cfg,
+		cfg: cfg,
+		db: db,
 	}
 }

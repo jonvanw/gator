@@ -11,7 +11,7 @@ func handlerLogin(s *state, cmd command) error {
 
 	userName := cmd.args[0]
 
-	s.config.SetUser(userName)
+	s.cfg.SetUser(userName)
 
 	fmt.Printf("Logged in as %s\n", userName)
 

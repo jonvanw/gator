@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/jonvanw/gator/internal/config"
+	"github.com/jonvanw/gator/internal/database"
 	_ "github.com/lib/pq"
 )
 
@@ -15,14 +16,15 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Failed to read config: %v\n", err)
 		os.Exit(1)
 	}
-	db, err := sql.Open("postgres", cfg.DbUrl)
+	dbConn, err := sql.Open("postgres", cfg.DbUrl)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to open database: %v\n", err)
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer dbConn.Close()
+	dbQueries := database.New(dbConn)
 
-	s := NewState(cfg)
+	s := NewState(cfg, dbQueries)
 
 	commands := NewCommands()
 	commands.register("login", handlerLogin)

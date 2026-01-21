@@ -39,5 +39,19 @@ func handlerAddFeed(s *state, cmd command) error {
 	fmt.Printf("  Name: %s\n", feed.Name)
 	fmt.Printf("  URL: %s\n", feed.Url)
 	fmt.Println("Note that the feed URL was not validated and may not be a valid RSS feed.")
+
+	feedFollow, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID: uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		FeedID: feed.ID,
+		UserID: user.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to follow the feed: %v", err)
+	}
+
+	fmt.Printf("Feed follow created successfully:\n")
+	fmt.Printf("  Follow ID: %s\n", feedFollow.ID)
 	return nil
 }

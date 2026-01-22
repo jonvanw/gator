@@ -5,9 +5,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/jonvanw/gator/internal/database"
 	"github.com/jonvanw/gator/internal/rss"
+	"github.com/lib/pq"
 )
 
 func handlerAgg(s *state, cmd command) error {
@@ -49,10 +53,38 @@ func scrapeNextFeed(s *state, skipCuttoff time.Time) error {
 
 	fmt.Printf("Title: %v\n", rss.Channel.Title)
 	for _, item := range rss.Channel.Item {
-		fmt.Printf("   Item Title: %v\n", item.Title)
-		fmt.Printf("   Item Link: %v\n", item.Link)
-		fmt.Printf("   Item Description: %v\n", item.Description)
-		fmt.Printf("   Item PubDate: %v\n", item.PubDate)
+		publishedAt, err := time.Parse(time.RFC1123Z, item.PubDate)
+		if err != nil {
+			// Try alternative format
+			publishedAt, err = time.Parse(time.RFC1123, item.PubDate)
+			if err != nil {
+				publishedAt = time.Now()
+			}
+		}
+		_, err = s.db.CreatePost(context.Background(), database.CreatePostParams{
+			ID: uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			Title: item.Title,
+			Url: item.Link,
+			Description: item.Description,
+			PublishedAt: publishedAt,
+			FeedID: feed.ID,
+		})
+		if err != nil {
+			// Check if error is a unique constraint violation on URL
+			var pqErr *pq.Error
+			if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+				// Unique constraint violation - ignore it
+				continue
+			}
+			// Check error message as fallback
+			if strings.Contains(err.Error(), "unique") || strings.Contains(err.Error(), "duplicate key") {
+				// URL already exists - ignore it
+				continue
+			}
+			return fmt.Errorf("failed to create post: %v", err)
+		}
 	}
 
 	err = s.db.MarkFeedFetched(context.Background(), feed.ID)
@@ -60,7 +92,7 @@ func scrapeNextFeed(s *state, skipCuttoff time.Time) error {
 		return fmt.Errorf("failed to mark feed as fetched: %v", err)
 	}
 
-	fmt.Printf("Feed marked as fetched at time: %v\n", time.Now())
+	fmt.Printf("Feed fetched completed at time: %v\n", time.Now())
 
 	return nil
 }
